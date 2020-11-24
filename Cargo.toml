@@ -1,6 +1,6 @@
 [package]
 name = "nanowrimo"
-version = "0.1.2"
+version = "0.1.3"
 description = "Access to the NanoWrimo API, in all its forms"
 keywords = ["nanowrimo", "api"]
 repository = "https://github.com/craftspider/nanowrimo-rs"
