@@ -2,7 +2,7 @@ use std::{error, fmt};
 
 use reqwest::StatusCode;
 
-/// A common error type returned from
+/// A common error type returned from Nano API operations
 #[derive(Debug)]
 pub enum Error {
     /// An error induced by a failed reqwest
