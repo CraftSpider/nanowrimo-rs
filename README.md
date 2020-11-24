@@ -4,7 +4,6 @@
 [![crates.io](https://img.shields.io/crates/v/nanowrimo.svg)](https://crates.io/crates/nanowrimo)
 [![Documentation](https://docs.rs/nanowrimo/badge.svg)](https://docs.rs/nanowrimo)
 [![MIT/Apache-2 licensed](https://img.shields.io/crates/l/nanowrimo.svg)](./LICENSE-APACHE)
-[![CI](https://github.com/craftspider/nanowrimo/workflows/CI/badge.svg)](https://github.com/craftspider/nanowrimo-rs/actions?query=workflow%3ACI)
 
 An easy-to use NanoWrimo API client for Rust
 
