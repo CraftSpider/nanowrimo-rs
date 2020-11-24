@@ -14,23 +14,23 @@ pub enum NanoKind {
     FavoriteBook,
     Genre,
     Group,
+    GroupExternalLink,
     Location,
     NanoMessage,
     Notification,
     Page,
     Post,
     Project,
+    ProjectSession,
     StopWatch,
     Timer,
     User,
     // Link items, named like ItemAItemB
     ChildPostPost,
-    GroupExternalLink,
     GroupUser,
     LocationGroup,
     PostPage,
     ProjectChallenge,
-    ProjectSession,
     UserBadge,
     // It cannot be assumed that we know all possible NanoKinds as it stands
     __NonExhaustive
@@ -40,7 +40,7 @@ impl NanoKind {
     /// Convert the name of a type from the Nano API into a NanoKind
     pub fn from_name(name: &str) -> NanoKind {
         match name {
-            "badges" => NanoKind::Badge,
+            "badges" | "badge" => NanoKind::Badge,
             "challenges" | "challenge" => NanoKind::Challenge,
             "child-posts" => NanoKind::ChildPost,
             "daily-aggregates" => NanoKind::DailyAggregate,
@@ -49,23 +49,23 @@ impl NanoKind {
             "favorite-books" => NanoKind::FavoriteBook,
             "genres" => NanoKind::Genre,
             "groups" | "group" => NanoKind::Group,
-            "locations" => NanoKind::Location,
+            "group-external-links" => NanoKind::GroupExternalLink,
+            "locations" | "location" => NanoKind::Location,
             "nanomessages" => NanoKind::NanoMessage,
             "notifications" => NanoKind::Notification,
             "pages" => NanoKind::Page,
             "posts" => NanoKind::Post,
             "projects" | "project" => NanoKind::Project,
+            "project-sessions" => NanoKind::ProjectSession,
             "stopwatches" => NanoKind::StopWatch,
             "timers" => NanoKind::Timer,
             "users" | "user" => NanoKind::User,
 
             "child-post-posts" => NanoKind::ChildPostPost,
-            "group-external-links" => NanoKind::GroupExternalLink,
             "group-users" => NanoKind::GroupUser,
             "location-groups" => NanoKind::LocationGroup,
             "post-pages" => NanoKind::PostPage,
-            "project-challenges" => NanoKind::ProjectChallenge,
-            "project-sessions" => NanoKind::ProjectSession,
+            "project-challenges" | "project-challenge" => NanoKind::ProjectChallenge,
             "user-badges" => NanoKind::UserBadge,
             kind => panic!("Unknown/unimplemented NanoKind: {}", kind)
         }

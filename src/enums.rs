@@ -156,3 +156,31 @@ impl Into<&'static str> for EntryMethod {
         }
     }
 }
+
+#[derive(Deserialize, Serialize, Debug, Copy, Clone)]
+#[serde(try_from = "u8", into = "u8")]
+pub enum AdminLevel {
+    User,
+    Admin
+}
+
+impl TryFrom<u8> for AdminLevel {
+    type Error = &'static str;
+
+    fn try_from(val: u8) ->  Result<AdminLevel, Self::Error> {
+        match val {
+            0 => Ok(AdminLevel::User),
+            1 => Ok(AdminLevel::Admin),
+            _ => Err("Cannot convert u8 into AdminLevel")
+        }
+    }
+}
+
+impl Into<u8> for AdminLevel {
+    fn into(self) -> u8 {
+        match self {
+            AdminLevel::User => 0,
+            AdminLevel::Admin => 1,
+        }
+    }
+}

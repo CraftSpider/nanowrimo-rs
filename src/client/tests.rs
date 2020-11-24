@@ -20,6 +20,17 @@ async fn test_current_user() {
 }
 
 #[tokio::test]
+async fn test_notifications() {
+    let client = test_client().await;
+
+    let notifs = client.notifications().await.unwrap();
+
+    for i in notifs.data {
+        assert_eq!(i.kind(), NanoKind::Notification, "notifications didn't return only all notifications");
+    }
+}
+
+#[tokio::test]
 async fn test_get_all_filtered() {
     let client = test_client().await;
     let user_id = client.current_user().await.unwrap().data.id;

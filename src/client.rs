@@ -195,9 +195,22 @@ impl NanoClient {
         self.retry_request("offers", Method::GET, &()).await
     }
 
+    /// Get the currently logged in user, with included linked items
+    pub async fn current_user_includes(&self, include: &[NanoKind]) -> Result<ItemResponse, Error> {
+        let mut data = Vec::new();
+
+        if !include.is_empty() {
+            data.push(
+                ("include".to_string(), include.iter().map(|kind| kind.api_name()).collect::<Vec<&str>>().join(","))
+            )
+        }
+
+        self.retry_request("users/current", Method::GET, &data).await
+    }
+
     /// Get the currently logged in user
     pub async fn current_user(&self) -> Result<ItemResponse, Error> {
-        self.retry_request("users/current", Method::GET, &()).await
+        self.current_user_includes(&[]).await
     }
 
     /// Get info about a specific set of pages. Known valid values include
@@ -205,6 +218,11 @@ impl NanoClient {
     /// If you know of other valid values, please open an issue with the values to add to this list!
     pub async fn pages(&self, page: &str) -> Result<ItemResponse, Error> {
         self.retry_request(&format!("pages/{}", page), Method::GET, &()).await
+    }
+
+    /// Get the list of notifications for the current user
+    pub async fn notifications(&self) -> Result<CollectionResponse, Error> {
+        self.retry_request("notifications", Method::GET, &()).await
     }
 
     // Type queries
