@@ -1,6 +1,8 @@
 
-#[derive(PartialEq, Eq, Hash, Debug)]
-#[derive(Copy, Clone)]
+/// A representation of the known kinds of NanoWrimo Objects. This enum is marked non_exhaustive
+/// because it tracks the private API, and thus it is unsure if this lists every possible type,
+/// and new ones may be added or removed at any time by Nano.
+#[derive(PartialEq, Eq, Hash, Debug, Copy, Clone)]
 #[non_exhaustive]
 pub enum NanoKind {
     Badge,
@@ -35,6 +37,7 @@ pub enum NanoKind {
 }
 
 impl NanoKind {
+    /// Convert the name of a type from the Nano API into a NanoKind
     pub fn from_name(name: &str) -> NanoKind {
         match name {
             "badges" => NanoKind::Badge,
@@ -68,6 +71,7 @@ impl NanoKind {
         }
     }
 
+    /// Convert a NanoKind into the equivalent name of the type in the Nano API
     pub fn api_name(&self) -> &str {
         match self {
             NanoKind::User => "users",

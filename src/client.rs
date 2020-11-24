@@ -79,10 +79,10 @@ impl NanoClient {
 
         match status {
             StatusCode::INTERNAL_SERVER_ERROR => return Err(
-                Error::NanoError(status, NanoError { error: "Internal Server Error".to_string() })
+                Error::NanoError(status, "Internal Server Error".to_string())
             ),
             StatusCode::NOT_FOUND => return Err(
-                Error::NanoError(status, NanoError { error: "Page Not Found".to_string() })
+                Error::NanoError(status, "Page Not Found".to_string())
             ),
             _ => ()
         }
@@ -98,7 +98,7 @@ impl NanoClient {
 
         match nano_resp {
             NanoResponse::Success(val) => Ok(val),
-            NanoResponse::Error(err) => Err(Error::NanoError(status, err)),
+            NanoResponse::Error(err) => Err(Error::NanoError(status, err.error)),
             NanoResponse::Unknown(val) => panic!("Couldn't parse valid JSON as NanoResponse:\n{}", val)
         }
     }
