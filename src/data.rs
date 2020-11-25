@@ -1,4 +1,4 @@
-use crate::{NanoKind, PrivacySetting, ProjectStatus, EventType, GroupType, EntryMethod, AdminLevel};
+use crate::{NanoKind, PrivacySetting, ProjectStatus, EventType, GroupType, EntryMethod, AdminLevel, ActionType, DisplayStatus, WritingType};
 use crate::utils::*;
 use std::collections::HashMap;
 use chrono::{DateTime, Utc, NaiveDate};
@@ -343,7 +343,7 @@ pub struct ProjectData {
     pub unit_count: Option<u64>, // TODO: ???
     pub unit_type: u64, // TODO: Enum
     pub user_id: u64,
-    pub writing_type: u64, // TODO: Enum
+    pub writing_type: WritingType,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -376,7 +376,7 @@ pub struct ChallengeData {
     pub unit_type: u64, // TODO: Enum
     pub user_id: u64,
     pub win_allowed_at: NaiveDate,
-    pub writing_type: u64, // TODO: Enum?
+    pub writing_type: WritingType,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -463,12 +463,12 @@ pub struct NanoMessageData {
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct NotificationData {
     pub action_id: Option<u64>,
-    pub action_type: String, // TODO: Enum
+    pub action_type: ActionType,
     pub content: String,
     pub created_at: DateTime<Utc>,
     pub data_count: Option<u64>,
     pub display_at: DateTime<Utc>,
-    pub display_status: u8, // TODO: Enum
+    pub display_status: DisplayStatus,
     pub headline: String,
     pub image_url: Option<String>,
     pub last_viewed_at: Option<DateTime<Utc>>,
@@ -568,7 +568,7 @@ pub struct ProjectChallengeData {
     pub user_id: u64,
     pub when: Option<u64>, // TODO: ???
     pub writing_location: Option<String>, // TODO: ???
-    pub writing_type: Option<u64>, // TODO: ???
+    pub writing_type: Option<WritingType>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
