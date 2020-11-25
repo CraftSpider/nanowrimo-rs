@@ -17,6 +17,7 @@ This example uses [Tokio](https://tokio.rs)
 ```toml
 [dependencies]
 nanowrimo = "0.1"
+tokio = { version = "0.2", features = ["full"] }
 ```
 
 ```rust,no_run
