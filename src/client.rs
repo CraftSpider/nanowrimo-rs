@@ -213,8 +213,20 @@ impl NanoClient {
         self.current_user_includes(&[]).await
     }
 
-    /// Get info about a specific set of pages. Known valid values include
-    /// "what-is-camp-nanowrimo", "nano-prep-101", and "pep-talks".
+    /// Get info about a specific set of pages. Known valid values include:
+    ///
+    /// - `"what-is-camp-nanowrimo"`
+    /// - `"nano-prep-101"`
+    /// - `"pep-talks"`
+    /// - `"dei"`
+    /// - `"come-write-in"`
+    /// - `"about-nano"`
+    /// - `"staff"`
+    /// - `"board-of-directors"`
+    /// - `"writers-board"`
+    /// - `"terms-and-conditions"`
+    /// - `"writers-board"`
+    ///
     /// If you know of other valid values, please open an issue with the values to add to this list!
     pub async fn pages(&self, page: &str) -> Result<ItemResponse, Error> {
         self.retry_request(&format!("pages/{}", page), Method::GET, &()).await
@@ -223,6 +235,12 @@ impl NanoClient {
     /// Get the list of notifications for the current user
     pub async fn notifications(&self) -> Result<CollectionResponse, Error> {
         self.retry_request("notifications", Method::GET, &()).await
+    }
+
+    /// Get a set of all the challenges this user has access to (Possibly all they can make
+    /// projects in)
+    pub async fn available_challenges(&self) -> Result<CollectionResponse, Error> {
+        self.retry_request("challenges/available", Method::GET, &()).await
     }
 
     // Type queries
