@@ -31,6 +31,25 @@ async fn test_notifications() {
 }
 
 #[tokio::test]
+async fn test_pages() {
+    let client = NanoClient::new_user(env!("NANO_USERNAME"), env!("NANO_PASSWORD"))
+        .await
+        .unwrap();
+
+    for &i in &[
+        "what-is-camp-nanowrimo", "nano-prep-101", "pep-talks", "dei", "come-write-in",
+        "about-nano", "staff", "board-of-directors", "writers-board", "terms-and-conditions",
+        "writers-board", "brought-to-you-by"
+    ] {
+        let result = client.pages(i)
+            .await
+            .expect("Couldn't get page that was expected to exist");
+
+        assert_eq!(result.data.kind(), NanoKind::Page, "page response was not of kind page");
+    }
+}
+
+#[tokio::test]
 async fn test_get_all_filtered() {
     let client = test_client().await;
     let user_id = client.current_user().await.unwrap().data.id;

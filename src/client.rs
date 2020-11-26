@@ -12,6 +12,14 @@ use serde::de::DeserializeOwned;
 #[cfg(test)]
 mod tests;
 
+fn add_included(data: &mut Vec<(String, String)>, include: &[NanoKind]) {
+    if !include.is_empty() {
+        data.push(
+            ("include".to_string(), include.iter().map(|kind| kind.api_name()).collect::<Vec<&str>>().join(","))
+        )
+    }
+}
+
 /// A client with which to connect to the Nano site. Can be used with or without login.
 #[derive(Debug)]
 pub struct NanoClient {
@@ -196,21 +204,17 @@ impl NanoClient {
     }
 
     /// Get the currently logged in user, with included linked items
-    pub async fn current_user_includes(&self, include: &[NanoKind]) -> Result<ItemResponse, Error> {
+    pub async fn current_user_include(&self, include: &[NanoKind]) -> Result<ItemResponse, Error> {
         let mut data = Vec::new();
 
-        if !include.is_empty() {
-            data.push(
-                ("include".to_string(), include.iter().map(|kind| kind.api_name()).collect::<Vec<&str>>().join(","))
-            )
-        }
+        add_included(&mut data, include);
 
         self.retry_request("users/current", Method::GET, &data).await
     }
 
     /// Get the currently logged in user
     pub async fn current_user(&self) -> Result<ItemResponse, Error> {
-        self.current_user_includes(&[]).await
+        self.current_user_include(&[]).await
     }
 
     /// Get info about a specific set of pages. Known valid values include:
@@ -226,6 +230,7 @@ impl NanoClient {
     /// - `"writers-board"`
     /// - `"terms-and-conditions"`
     /// - `"writers-board"`
+    /// - `"brought-to-you-by"`
     ///
     /// If you know of other valid values, please open an issue with the values to add to this list!
     pub async fn pages(&self, page: &str) -> Result<ItemResponse, Error> {
@@ -256,7 +261,7 @@ impl NanoClient {
     /// **Warning**: Many filter combinations are invalid, and the rules are not currently fully
     /// understood.
     pub async fn get_all_include_filtered(&self, ty: NanoKind, include: &[NanoKind], filter: &[(&str, u64)]) -> Result<CollectionResponse, Error> {
-        let mut data: Vec<(String, String)> = Vec::new();
+        let mut data = Vec::new();
 
         for i in filter {
             data.push(
@@ -264,11 +269,7 @@ impl NanoClient {
             )
         }
 
-        if !include.is_empty() {
-            data.push(
-                ("include".to_string(), include.iter().map(|kind| kind.api_name()).collect::<Vec<&str>>().join(","))
-            )
-        }
+        add_included(&mut data, include);
 
         self.retry_request(ty.api_name(), Method::GET, &data).await
     }
@@ -293,13 +294,9 @@ impl NanoClient {
 
     /// Get an item of a specific type and ID, with included linked items
     pub async fn get_id_include(&self, ty: NanoKind, id: u64, include: &[NanoKind]) -> Result<ItemResponse, Error> {
-        let mut data: Vec<(String, String)> = Vec::new();
+        let mut data = Vec::new();
 
-        if !include.is_empty() {
-            data.push(
-                ("include".to_string(), include.iter().map(|kind| kind.api_name()).collect::<Vec<&str>>().join(","))
-            )
-        }
+        add_included(&mut data, include);
 
         self.retry_request(&format!("{}/{}", ty.api_name(), id), Method::GET, &data).await
     }

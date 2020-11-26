@@ -101,6 +101,8 @@ pub enum GroupType {
     Everyone,
     Region,
     Buddies,
+    WritingGroup,
+    Event,
 }
 
 impl TryFrom<&str> for GroupType {
@@ -111,6 +113,8 @@ impl TryFrom<&str> for GroupType {
             "everyone" => Ok(GroupType::Everyone),
             "region" => Ok(GroupType::Region),
             "buddies" => Ok(GroupType::Buddies),
+            "writing group" => Ok(GroupType::WritingGroup),
+            "event" => Ok(GroupType::Event),
             _ => Err("Cannot convert &str into GroupType")
         }
     }
@@ -122,6 +126,8 @@ impl Into<&'static str> for GroupType {
             GroupType::Everyone => "everyone",
             GroupType::Region => "region",
             GroupType::Buddies => "buddies",
+            GroupType::WritingGroup => "writing group",
+            GroupType::Event => "event",
         }
     }
 }
@@ -288,6 +294,139 @@ impl Into<u8> for WritingType {
             WritingType::Nonfiction => 4,
             WritingType::Poetry => 5,
             WritingType::Other => 8
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, PartialEq, Eq, Debug, Copy, Clone)]
+#[serde(try_from = "&str", into = "&'static str")]
+pub enum ContentType {
+    GeneralContent,
+    StackedContent,
+    Plate,
+    GroupOfPeople,
+    GroupOfPageCards,
+    PersonCard,
+    PepTalk,
+    PlainText,
+}
+
+impl TryFrom<&str> for ContentType {
+    type Error = &'static str;
+
+    fn try_from(val: &str) -> Result<ContentType, Self::Error> {
+        match val {
+            "General content" => Ok(ContentType::GeneralContent),
+            "Stacked Content" => Ok(ContentType::StackedContent),
+            "Plate" => Ok(ContentType::Plate),
+            "Group of people" => Ok(ContentType::GroupOfPeople),
+            "Group of page cards" => Ok(ContentType::GroupOfPageCards),
+            "Person Card" => Ok(ContentType::PersonCard),
+            "Pep Talk" => Ok(ContentType::PepTalk),
+            "Plain Text" => Ok(ContentType::PlainText),
+            _ => Err("Cannot convert &str into ContentType")
+        }
+    }
+}
+
+impl Into<&'static str> for ContentType {
+    fn into(self) -> &'static str {
+        match self {
+            ContentType::GeneralContent => "General content",
+            ContentType::StackedContent => "Stacked Content",
+            ContentType::Plate => "Plate",
+            ContentType::GroupOfPeople => "Group of people",
+            ContentType::GroupOfPageCards => "Group of page cards",
+            ContentType::PersonCard => "Person Card",
+            ContentType::PepTalk => "Pep Talk",
+            ContentType::PlainText => "Plain Text",
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, PartialEq, Eq, Debug, Copy, Clone)]
+#[serde(try_from = "&str", into = "&'static str")]
+pub enum RegistrationPath {
+    Email,
+    Facebook,
+    Google,
+}
+
+impl TryFrom<&str> for RegistrationPath {
+    type Error = &'static str;
+
+    fn try_from(val: &str) -> Result<RegistrationPath, Self::Error> {
+        match val {
+            "email" => Ok(RegistrationPath::Email),
+            "Facebook" => Ok(RegistrationPath::Facebook),
+            "Google" => Ok(RegistrationPath::Google),
+            _ => Err("Cannot convert &str into RegistrationPath")
+        }
+    }
+}
+
+impl Into<&'static str> for RegistrationPath {
+    fn into(self) -> &'static str {
+        match self {
+            RegistrationPath::Email => "email",
+            RegistrationPath::Facebook => "Facebook",
+            RegistrationPath::Google => "Google",
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, PartialEq, Eq, Debug, Copy, Clone)]
+#[serde(try_from = "&str", into = "&'static str")]
+pub enum BadgeType {
+    WordCount,
+    SelfAwarded
+}
+
+impl TryFrom<&str> for BadgeType {
+    type Error = &'static str;
+
+    fn try_from(val: &str) -> Result<BadgeType, Self::Error> {
+        match val {
+            "word count" => Ok(BadgeType::WordCount),
+            "self-awarded" => Ok(BadgeType::SelfAwarded),
+            _ => Err("Cannot convert &str into BadgeType")
+        }
+    }
+}
+
+impl Into<&'static str> for BadgeType {
+    fn into(self) -> &'static str {
+        match self {
+            BadgeType::WordCount => "word count",
+            BadgeType::SelfAwarded => "self-awarded",
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, PartialEq, Eq, Debug, Copy, Clone)]
+#[serde(try_from = "u8", into = "u8")]
+pub enum JoiningRule {
+    AdminOnly,
+    AnyUser,
+}
+
+impl TryFrom<u8> for JoiningRule {
+    type Error = &'static str;
+
+    fn try_from(val: u8) -> Result<JoiningRule, Self::Error> {
+        match val {
+            0 => Ok(JoiningRule::AdminOnly),
+            1 => Ok(JoiningRule::AnyUser),
+            _ => Err("Cannot convert &str into JoiningRule")
+        }
+    }
+}
+
+impl Into<u8> for JoiningRule {
+    fn into(self) -> u8 {
+        match self {
+            JoiningRule::AdminOnly => 0,
+            JoiningRule::AnyUser => 1,
         }
     }
 }

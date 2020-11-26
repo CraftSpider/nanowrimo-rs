@@ -1,4 +1,4 @@
-use crate::{NanoKind, PrivacySetting, ProjectStatus, EventType, GroupType, EntryMethod, AdminLevel, ActionType, DisplayStatus, WritingType};
+use crate::{NanoKind, PrivacySetting, ProjectStatus, EventType, GroupType, EntryMethod, AdminLevel, ActionType, DisplayStatus, WritingType, ContentType, RegistrationPath, BadgeType, JoiningRule};
 use crate::utils::*;
 use std::collections::HashMap;
 use chrono::{DateTime, Utc, NaiveDate};
@@ -6,6 +6,7 @@ use serde::{Serialize, Deserialize};
 use serde::de::DeserializeOwned;
 
 // TODO: A lot of these shouldn't be pub, constructing them yourself is dangerous
+// TODO: May be possible to make time_zone a type from chrono
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged, bound(deserialize = "T: DeserializeOwned"))]
@@ -79,8 +80,8 @@ pub struct PostInfo {
 pub struct ObjectRef {
     #[serde(deserialize_with = "de_str_num")]
     pub id: u64,
-    #[serde(rename = "type")]
-    pub kind: String // TODO: NanoKind
+    #[serde(rename = "type", deserialize_with = "de_nanokind", serialize_with = "se_nanokind")]
+    pub kind: NanoKind
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -183,12 +184,13 @@ pub struct StopWatchData {
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct TimerData {
     pub cancelled: bool,
-    pub duration: u64, // Measured in minutes. TODO: time::Duration?
+    #[serde(deserialize_with = "de_duration_mins", serialize_with = "se_duration_mins")]
+    pub duration: chrono::Duration, // Measured in minutes.
     pub start: DateTime<Utc>
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct UserData {
     pub admin_level: AdminLevel,
     pub avatar: Option<String>,
@@ -203,20 +205,20 @@ pub struct UserData {
 
     pub halo: bool,
     pub laurels: u64,
-    pub location: Option<String>, // TODO: Check this
+    pub location: Option<String>,
     pub name: String,
 
     #[serde(flatten)]
     pub notification_settings: Option<NotificationSettings>,
 
     pub notifications_viewed_at: DateTime<Utc>,
-    pub plate: Option<String>, // TODO: Check this
-    pub postal_code: String,
+    pub plate: Option<String>,
+    pub postal_code: Option<String>,
 
     #[serde(flatten)]
     pub privacy_settings: Option<PrivacySettings>,
 
-    pub registration_path: String, // TODO: Enum
+    pub registration_path: RegistrationPath,
     pub setting_session_count_by_session: u8, // TODO: ???
     pub setting_session_more_info: bool, // TODO: ???
     pub slug: String,
@@ -353,7 +355,7 @@ pub struct BadgeData {
     pub adheres_to: String, // TODO: Enum maybe
     pub awarded: String,
     pub awarded_description: String,
-    pub badge_type: String, // TODO: Enum maybe
+    pub badge_type: BadgeType,
     pub description: String,
     pub generic_description: String,
     pub list_order: u64,
@@ -394,11 +396,11 @@ pub struct GroupData {
     pub cancelled_by_id: u64,
     pub created_at: DateTime<Utc>,
     pub description: Option<String>,
-    pub end_dt: Option<String>, // TODO: Date?
+    pub end_dt: Option<DateTime<Utc>>,
     pub forum_link: Option<String>,
     pub group_id: Option<u64>,
     pub group_type: GroupType,
-    pub joining_rule: u64, // TODO: Enum
+    pub joining_rule: Option<JoiningRule>,
     pub latitude: Option<f64>,
     pub longitude: Option<f64>,
     pub max_member_count: Option<u64>,
@@ -406,8 +408,8 @@ pub struct GroupData {
     pub name: String,
     pub plate: Option<String>,
     pub slug: String,
-    pub start_dt: Option<String>, // TODO: Date?
-    pub time_zone: Option<String>, // TODO: ???
+    pub start_dt: Option<DateTime<Utc>>,
+    pub time_zone: Option<String>,
     pub updated_at: DateTime<Utc>,
     pub url: Option<String>,
     pub user_id: Option<u64>
@@ -483,8 +485,8 @@ pub struct PageData {
     pub body: String,
     pub url: String,
     pub headline: String,
-    pub content_type: String, // TODO: Enum maybe
-    pub show_after: DateTime<Utc>,
+    pub content_type: ContentType,
+    pub show_after: Option<DateTime<Utc>>,
     pub promotional_card_image: Option<String>
 }
 
@@ -494,7 +496,7 @@ pub struct PostData {
     pub api_code: Option<String>, // TODO: ???
     pub body: String,
     pub card_image: Option<String>,
-    pub content_type: String, // TODO: Enum maybe
+    pub content_type: ContentType,
     pub expires_at: Option<NaiveDate>,
     pub external_link: Option<String>,
     pub headline: String,

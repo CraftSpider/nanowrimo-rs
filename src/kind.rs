@@ -38,8 +38,8 @@ pub enum NanoKind {
 
 impl NanoKind {
     /// Convert the name of a type from the Nano API into a NanoKind
-    pub fn from_name(name: &str) -> NanoKind {
-        match name {
+    pub fn from_name(name: &str) -> Result<NanoKind, String> {
+        Ok(match name {
             "badges" | "badge" => NanoKind::Badge,
             "challenges" | "challenge" => NanoKind::Challenge,
             "child-posts" => NanoKind::ChildPost,
@@ -67,8 +67,8 @@ impl NanoKind {
             "post-pages" => NanoKind::PostPage,
             "project-challenges" | "project-challenge" => NanoKind::ProjectChallenge,
             "user-badges" => NanoKind::UserBadge,
-            kind => panic!("Unknown/unimplemented NanoKind: {}", kind)
-        }
+            kind => return Err(format!("Unknown/unimplemented NanoKind: {}", kind))
+        })
     }
 
     /// Convert a NanoKind into the equivalent name of the type in the Nano API

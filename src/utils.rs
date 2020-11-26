@@ -3,6 +3,7 @@ use std::fmt;
 use std::collections::HashMap;
 use std::str::FromStr;
 use serde::{Deserializer, Serializer, Deserialize, Serialize};
+use chrono::Duration;
 
 pub(crate) fn de_str_num<'de, T, D>(des: D) -> Result<T, D::Error>
     where
@@ -13,6 +14,44 @@ pub(crate) fn de_str_num<'de, T, D>(des: D) -> Result<T, D::Error>
     String::deserialize(des)?
         .parse::<T>()
         .map_err(serde::de::Error::custom)
+}
+
+pub(crate) fn de_duration_mins<'de, D>(des: D) -> Result<Duration, D::Error>
+    where
+        D: Deserializer<'de>
+{
+    let val = i64::deserialize(des)?;
+
+    Ok(Duration::minutes(val))
+}
+
+pub(crate) fn se_duration_mins<S>(duration: &Duration, ser: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer
+{
+    duration
+        .num_minutes()
+        .serialize(ser)
+}
+
+pub(crate) fn de_nanokind<'de, D>(des: D) -> Result<NanoKind, D::Error>
+    where
+        D: Deserializer<'de>
+{
+    let str = String::deserialize(des)
+        .map_err(serde::de::Error::custom)?;
+
+    NanoKind::from_name(&str)
+        .map_err(serde::de::Error::custom)
+}
+
+pub(crate) fn se_nanokind<S>(kind: &NanoKind, ser: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer
+{
+    kind
+        .api_name()
+        .serialize(ser)
 }
 
 pub(crate) fn de_rel_includes<'de, D>(des: D) -> Result<HashMap<NanoKind, Vec<ObjectRef>>, D::Error>
@@ -31,7 +70,7 @@ pub(crate) fn de_rel_includes<'de, D>(des: D) -> Result<HashMap<NanoKind, Vec<Ob
                     |(_, val)| val.data.is_some()
                 )
                 .map(
-                    |(key, val)| (NanoKind::from_name(&key), val.data.unwrap())
+                    |(key, val)| (NanoKind::from_name(&key).unwrap(), val.data.unwrap())
                 )
                 .collect()
         )
@@ -61,7 +100,7 @@ pub(crate) fn de_relation<'de, D>(des: D) -> Result<HashMap<NanoKind, RelationLi
         .map(
             |table| table.into_iter()
                 .map(
-                    |(key, val)| (NanoKind::from_name(&key), val.links)
+                    |(key, val)| (NanoKind::from_name(&key).unwrap(), val.links)
                 ).collect()
         )
         .map_err(serde::de::Error::custom)
