@@ -16,12 +16,12 @@ This example uses [Tokio](https://tokio.rs)
 
 ```toml
 [dependencies]
-nanowrimo = "0.1"
+nanowrimo = "0.2"
 tokio = { version = "0.2", features = ["full"] }
 ```
 
 ```rust,no_run
-use nanowrimo::{NanoClient, ObjectData};
+use nanowrimo::{NanoClient};
 
 #[tokio::main]
 async fn main() {
@@ -34,11 +34,11 @@ async fn main() {
         .expect("Couldn't get current user")
         .data;
         
-    println!("User ID: {}", user.id)
-    if let ObjectData::User(data) = user.data {
-        println!("User Bio: {}", data.bio);
-        println!("Avatar: {}", data.avatar);
-    }
+    let data = &user.data;
+        
+    println!("User ID: {}", user.id())
+    println!("User Bio: {}", data.bio);
+    println!("Avatar: {}", data.avatar);
 }
 ```
 
