@@ -83,6 +83,7 @@ impl<D: ObjectInfo> CollectionResponse<D> {
     /// an instance exists. Otherwise returns None
     pub fn get_ref(&self, obj_ref: &ObjectRef) -> Option<&Object> {
         self.included
+            .as_ref()
             .and_then(
                 |val| val.iter().find(
                     |obj| obj.id() == obj_ref.id && obj.kind() == obj_ref.kind
@@ -112,6 +113,7 @@ impl<D: ObjectInfo> ItemResponse<D> {
     /// an instance exists. Otherwise returns None
     pub fn get_ref(&self, obj_ref: &ObjectRef) -> Option<&Object> {
         self.included
+            .as_ref()
             .and_then(
                 |val| val.iter().find(
                     |obj| obj.id() == obj_ref.id && obj.kind() == obj_ref.kind
