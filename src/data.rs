@@ -190,7 +190,7 @@ impl ObjectInfo for Object {
 }
 
 macro_rules! obj_ty {
-    ($( $name:ident $name_snake:ident )+) => {
+    ($( $name:ident )+) => {
         paste! {
             $(
             #[derive(Serialize, Deserialize, Debug)]
@@ -224,7 +224,7 @@ macro_rules! obj_ty {
 
             impl Object {
                 #[track_caller]
-                pub fn [<unwrap_ $name_snake>](&self) -> &[<$name Object>] {
+                pub fn [<unwrap_ $name:snake>](&self) -> &[<$name Object>] {
                     if let Object::$name(inner) = self {
                         inner
                     } else {
@@ -238,28 +238,28 @@ macro_rules! obj_ty {
 }
 
 obj_ty!(
-    Badge badge
-    Challenge challenge
-    FavoriteAuthor favorite_author
-    FavoriteBook favorite_book
-    Genre genre
-    Group group
-    GroupExternalLink group_external_link
-    Location location
-    NanoMessage nano_message
-    Notification notification
-    Page page
-    Post post
-    Project project
-    ProjectSession project_session
-    StopWatch stopwatch
-    Timer timer
-    User user
+    Badge
+    Challenge
+    FavoriteAuthor
+    FavoriteBook
+    Genre
+    Group
+    GroupExternalLink
+    Location
+    NanoMessage
+    Notification
+    Page
+    Post
+    Project
+    ProjectSession
+    StopWatch
+    Timer
+    User
 
-    GroupUser group_user
-    LocationGroup location_group
-    ProjectChallenge project_challenge
-    UserBadge user_badge
+    GroupUser
+    LocationGroup
+    ProjectChallenge
+    UserBadge
 );
 
 #[derive(Serialize, Deserialize, Debug)]
