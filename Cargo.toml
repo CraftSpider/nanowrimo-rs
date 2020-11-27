@@ -1,6 +1,6 @@
 [package]
 name = "nanowrimo"
-version = "0.1.6"
+version = "0.2.0"
 description = "Access to the NanoWrimo API, in all its forms"
 keywords = ["nanowrimo", "api"]
 repository = "https://github.com/craftspider/nanowrimo-rs"
@@ -15,6 +15,7 @@ serde = { version = "^1.0", features = ["derive"] }
 serde_json = { version = "^1.0" }
 reqwest = { version = "^0.10", features = ["json"] }
 chrono = { version = "^0.4", features = ["serde"] }
+paste = "^1.0"
 
 [dev-dependencies]
 tokio = { version = "^0.2", features = ["full"] }

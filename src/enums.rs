@@ -379,7 +379,8 @@ impl Into<&'static str> for RegistrationPath {
 #[serde(try_from = "&str", into = "&'static str")]
 pub enum BadgeType {
     WordCount,
-    SelfAwarded
+    SelfAwarded,
+    Participation
 }
 
 impl TryFrom<&str> for BadgeType {
@@ -389,6 +390,7 @@ impl TryFrom<&str> for BadgeType {
         match val {
             "word count" => Ok(BadgeType::WordCount),
             "self-awarded" => Ok(BadgeType::SelfAwarded),
+            "participation" => Ok(BadgeType::Participation),
             _ => Err("Cannot convert &str into BadgeType")
         }
     }
@@ -399,6 +401,7 @@ impl Into<&'static str> for BadgeType {
         match self {
             BadgeType::WordCount => "word count",
             BadgeType::SelfAwarded => "self-awarded",
+            BadgeType::Participation => "participation",
         }
     }
 }

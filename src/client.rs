@@ -184,12 +184,12 @@ impl NanoClient {
     }
 
     /// Search for users by username
-    pub async fn search(&self, name: &str) -> Result<CollectionResponse, Error> {
+    pub async fn search(&self, name: &str) -> Result<CollectionResponse<UserObject>, Error> {
         self.retry_request("search", Method::GET, &[("q", name)]).await
     }
 
     /// Get a random sponsor offer
-    pub async fn random_offer(&self) -> Result<ItemResponse, Error> {
+    pub async fn random_offer(&self) -> Result<ItemResponse<PostObject>, Error> {
         self.retry_request("random_offer", Method::GET, &()).await
     }
 
@@ -199,12 +199,12 @@ impl NanoClient {
     }
 
     /// Get a list of all current sponsor offers
-    pub async fn offers(&self) -> Result<Vec<ItemResponse>, Error> {
+    pub async fn offers(&self) -> Result<Vec<ItemResponse<PostObject>>, Error> {
         self.retry_request("offers", Method::GET, &()).await
     }
 
     /// Get the currently logged in user, with included linked items
-    pub async fn current_user_include(&self, include: &[NanoKind]) -> Result<ItemResponse, Error> {
+    pub async fn current_user_include(&self, include: &[NanoKind]) -> Result<ItemResponse<UserObject>, Error> {
         let mut data = Vec::new();
 
         add_included(&mut data, include);
@@ -213,7 +213,7 @@ impl NanoClient {
     }
 
     /// Get the currently logged in user
-    pub async fn current_user(&self) -> Result<ItemResponse, Error> {
+    pub async fn current_user(&self) -> Result<ItemResponse<UserObject>, Error> {
         self.current_user_include(&[]).await
     }
 
@@ -233,18 +233,18 @@ impl NanoClient {
     /// - `"brought-to-you-by"`
     ///
     /// If you know of other valid values, please open an issue with the values to add to this list!
-    pub async fn pages(&self, page: &str) -> Result<ItemResponse, Error> {
+    pub async fn pages(&self, page: &str) -> Result<ItemResponse<PageObject>, Error> {
         self.retry_request(&format!("pages/{}", page), Method::GET, &()).await
     }
 
     /// Get the list of notifications for the current user
-    pub async fn notifications(&self) -> Result<CollectionResponse, Error> {
+    pub async fn notifications(&self) -> Result<CollectionResponse<NotificationObject>, Error> {
         self.retry_request("notifications", Method::GET, &()).await
     }
 
     /// Get a set of all the challenges this user has access to (Possibly all they can make
     /// projects in)
-    pub async fn available_challenges(&self) -> Result<CollectionResponse, Error> {
+    pub async fn available_challenges(&self) -> Result<CollectionResponse<ChallengeObject>, Error> {
         self.retry_request("challenges/available", Method::GET, &()).await
     }
 

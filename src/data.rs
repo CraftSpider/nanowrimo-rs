@@ -4,6 +4,7 @@ use crate::utils::*;
 use std::collections::HashMap;
 
 use chrono::{DateTime, Utc, NaiveDate};
+use paste::paste;
 use serde::{Serialize, Deserialize};
 use serde::de::DeserializeOwned;
 
@@ -51,8 +52,8 @@ pub struct StoreItem {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
-pub struct CollectionResponse {
-    pub data: Vec<Object>,
+pub struct CollectionResponse<D: ObjectInfo = Object> {
+    pub data: Vec<D>,
     pub included: Option<Vec<Object>>,
 
     #[serde(flatten)]
@@ -61,8 +62,8 @@ pub struct CollectionResponse {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
-pub struct ItemResponse {
-    pub data: Object,
+pub struct ItemResponse<D: ObjectInfo = Object> {
+    pub data: D,
     pub included: Option<Vec<Object>>,
 
     #[serde(flatten)]
@@ -72,9 +73,9 @@ pub struct ItemResponse {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct PostInfo {
-    pub after_posts: Vec<ItemResponse>,
-    pub author_cards: CollectionResponse,
-    pub before_posts: Vec<ItemResponse>
+    pub after_posts: Vec<ItemResponse<PostObject>>,
+    pub author_cards: CollectionResponse<PostObject>,
+    pub before_posts: Vec<ItemResponse<PostObject>>
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -86,94 +87,180 @@ pub struct ObjectRef {
     pub kind: NanoKind
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(deny_unknown_fields)]
-pub struct Object {
-    #[serde(deserialize_with = "de_str_num")]
-    pub id: u64,
-    pub relationships: Option<RelationInfo>,
-    pub links: LinkInfo,
+pub trait ObjectInfo {
+    fn kind(&self) -> NanoKind;
+    fn id(&self) -> u64;
+    fn relationships(&self) -> &Option<RelationInfo>;
+    fn links(&self) -> &LinkInfo;
+}
 
-    #[serde(flatten)]
-    pub data: ObjectData
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(tag = "type")]
+pub enum Object {
+    #[serde(rename = "badges")]
+    Badge(BadgeObject),
+    #[serde(rename = "challenges")]
+    Challenge(ChallengeObject),
+    #[serde(rename = "favorite-authors")]
+    FavoriteAuthor(FavoriteAuthorObject),
+    #[serde(rename = "favorite-books")]
+    FavoriteBook(FavoriteBookObject),
+    #[serde(rename = "genres")]
+    Genre(GenreObject),
+    #[serde(rename = "groups")]
+    Group(GroupObject),
+    #[serde(rename = "group-external-links")]
+    GroupExternalLink(GroupExternalLinkObject),
+    #[serde(rename = "locations")]
+    Location(LocationObject),
+    #[serde(rename = "nanomessages")]
+    NanoMessage(NanoMessageObject),
+    #[serde(rename = "notifications")]
+    Notification(NotificationObject),
+    #[serde(rename = "pages")]
+    Page(PageObject),
+    #[serde(rename = "posts")]
+    Post(PostObject),
+    #[serde(rename = "projects")]
+    Project(ProjectObject),
+    #[serde(rename = "project-sessions")]
+    ProjectSession(ProjectSessionObject),
+    #[serde(rename = "stopwatches")]
+    StopWatch(StopWatchObject),
+    #[serde(rename = "timers")]
+    Timer(TimerObject),
+    #[serde(rename = "users")]
+    User(UserObject),
+
+    #[serde(rename = "group-users")]
+    GroupUser(GroupUserObject),
+    #[serde(rename = "location-groups")]
+    LocationGroup(LocationGroupObject),
+    #[serde(rename = "project-challenges")]
+    ProjectChallenge(ProjectChallengeObject),
+    #[serde(rename = "user-badges")]
+    UserBadge(UserBadgeObject),
 }
 
 impl Object {
-    pub fn kind(&self) -> NanoKind {
-        match self.data {
-            ObjectData::Badge(_) => NanoKind::Badge,
-            ObjectData::Challenge(_) => NanoKind::Challenge,
-            ObjectData::FavoriteAuthor(_) => NanoKind::FavoriteAuthor,
-            ObjectData::FavoriteBook(_) => NanoKind::FavoriteBook,
-            ObjectData::Genre(_) => NanoKind::Genre,
-            ObjectData::Group(_) => NanoKind::Group,
-            ObjectData::GroupExternalLink(_) => NanoKind::GroupExternalLink,
-            ObjectData::Location(_) => NanoKind::Location,
-            ObjectData::NanoMessage(_) => NanoKind::NanoMessage,
-            ObjectData::Notification(_) => NanoKind::Notification,
-            ObjectData::Page(_) => NanoKind::Page,
-            ObjectData::Post(_) => NanoKind::Post,
-            ObjectData::Project(_) => NanoKind::Project,
-            ObjectData::ProjectSession(_) => NanoKind::ProjectSession,
-            ObjectData::StopWatch(_) => NanoKind::StopWatch,
-            ObjectData::Timer(_) => NanoKind::Timer,
-            ObjectData::User(_) => NanoKind::User,
+    fn inner(&self) -> &dyn ObjectInfo {
+        match self {
+            Object::Badge(data) => data,
+            Object::Challenge(data) => data,
+            Object::FavoriteAuthor(data) => data,
+            Object::FavoriteBook(data) => data,
+            Object::Genre(data) => data,
+            Object::Group(data) => data,
+            Object::GroupExternalLink(data) => data,
+            Object::Location(data) => data,
+            Object::NanoMessage(data) => data,
+            Object::Notification(data) => data,
+            Object::Page(data) => data,
+            Object::Post(data) => data,
+            Object::Project(data) => data,
+            Object::ProjectSession(data) => data,
+            Object::StopWatch(data) => data,
+            Object::Timer(data) => data,
+            Object::User(data) => data,
 
-            ObjectData::GroupUser(_) => NanoKind::GroupUser,
-            ObjectData::LocationGroup(_) => NanoKind::LocationGroup,
-            ObjectData::ProjectChallenge(_) => NanoKind::ProjectChallenge,
-            ObjectData::UserBadge(_) => NanoKind::UserBadge,
+            Object::GroupUser(data) => data,
+            Object::LocationGroup(data) => data,
+            Object::ProjectChallenge(data) => data,
+            Object::UserBadge(data) => data,
         }
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(tag = "type", content = "attributes", deny_unknown_fields)]
-pub enum ObjectData {
-    #[serde(rename = "badges")]
-    Badge(BadgeData),
-    #[serde(rename = "challenges")]
-    Challenge(ChallengeData),
-    #[serde(rename = "favorite-authors")]
-    FavoriteAuthor(FavoriteAuthorData),
-    #[serde(rename = "favorite-books")]
-    FavoriteBook(FavoriteBookData),
-    #[serde(rename = "genres")]
-    Genre(GenreData),
-    #[serde(rename = "groups")]
-    Group(GroupData),
-    #[serde(rename = "group-external-links")]
-    GroupExternalLink(GroupExternalLinkData),
-    #[serde(rename = "locations")]
-    Location(LocationData),
-    #[serde(rename = "nanomessages")]
-    NanoMessage(NanoMessageData),
-    #[serde(rename = "notifications")]
-    Notification(NotificationData),
-    #[serde(rename = "pages")]
-    Page(PageData),
-    #[serde(rename = "posts")]
-    Post(PostData),
-    #[serde(rename = "projects")]
-    Project(ProjectData),
-    #[serde(rename = "project-sessions")]
-    ProjectSession(ProjectSessionData),
-    #[serde(rename = "stopwatches")]
-    StopWatch(StopWatchData),
-    #[serde(rename = "timers")]
-    Timer(TimerData),
-    #[serde(rename = "users")]
-    User(UserData),
+impl ObjectInfo for Object {
+    fn kind(&self) -> NanoKind {
+        self.inner().kind()
+    }
 
-    #[serde(rename = "group-users")]
-    GroupUser(GroupUserData),
-    #[serde(rename = "location-groups")]
-    LocationGroup(LocationGroupData),
-    #[serde(rename = "project-challenges")]
-    ProjectChallenge(ProjectChallengeData),
-    #[serde(rename = "user-badges")]
-    UserBadge(UserBadgeData),
+    fn id(&self) -> u64 {
+        self.inner().id()
+    }
+
+    fn relationships(&self) -> &Option<RelationInfo> {
+        self.inner().relationships()
+    }
+
+    fn links(&self) -> &LinkInfo {
+        self.inner().links()
+    }
 }
+
+macro_rules! obj_ty {
+    ($( $name:ident $name_snake:ident )+) => {
+        paste! {
+            $(
+            #[derive(Serialize, Deserialize, Debug)]
+            pub struct [<$name Object>] {
+                #[serde(deserialize_with = "de_str_num")]
+                id: u64,
+                relationships: Option<RelationInfo>,
+                links: LinkInfo,
+
+                #[serde(rename = "attributes")]
+                pub data: [<$name Data>]
+            }
+
+            impl ObjectInfo for [<$name Object>] {
+                fn kind(&self) -> NanoKind {
+                    NanoKind::$name
+                }
+
+                fn id(&self) -> u64 {
+                    self.id
+                }
+
+                fn relationships(&self) -> &Option<RelationInfo> {
+                    &self.relationships
+                }
+
+                fn links(&self) -> &LinkInfo {
+                    &self.links
+                }
+            }
+
+            impl Object {
+                #[track_caller]
+                pub fn [<unwrap_ $name_snake>](&self) -> &[<$name Object>] {
+                    if let Object::$name(inner) = self {
+                        inner
+                    } else {
+                        panic!(concat!("Expected object type ", stringify!($name), " while unwrapping Object"))
+                    }
+                }
+            }
+            )+
+        }
+    }
+}
+
+obj_ty!(
+    Badge badge
+    Challenge challenge
+    FavoriteAuthor favorite_author
+    FavoriteBook favorite_book
+    Genre genre
+    Group group
+    GroupExternalLink group_external_link
+    Location location
+    NanoMessage nano_message
+    Notification notification
+    Page page
+    Post post
+    Project project
+    ProjectSession project_session
+    StopWatch stopwatch
+    Timer timer
+    User user
+
+    GroupUser group_user
+    LocationGroup location_group
+    ProjectChallenge project_challenge
+    UserBadge user_badge
+);
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]

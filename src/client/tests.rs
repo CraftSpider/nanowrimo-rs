@@ -20,6 +20,13 @@ async fn test_current_user() {
 }
 
 #[tokio::test]
+async fn test_fundometer() {
+    let client = test_client().await;
+
+    client.fundometer().await.unwrap();
+}
+
+#[tokio::test]
 async fn test_notifications() {
     let client = test_client().await;
 
@@ -52,7 +59,7 @@ async fn test_pages() {
 #[tokio::test]
 async fn test_get_all_filtered() {
     let client = test_client().await;
-    let user_id = client.current_user().await.unwrap().data.id;
+    let user_id = client.current_user().await.unwrap().data.id();
 
     let projects = client.get_all_filtered(NanoKind::Project, &[("user_id", user_id)])
         .await
@@ -74,8 +81,6 @@ async fn test_get_id() {
 
 /*
 TODO: Make tests for more stuff. Some examples used while writing all this:
-
-client.fundometer().await.unwrap();
 
 client.search("craftspider").await.unwrap();
 
