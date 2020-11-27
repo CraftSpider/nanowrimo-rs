@@ -19,81 +19,148 @@ pub(crate) enum NanoResponse<T: DeserializeOwned> {
     Unknown(serde_json::Value)
 }
 
+/// The response of the Nano API when a command results in an expected error
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct NanoError {
+    /// The error message of the response
     pub error: String
 }
 
+/// The response from logging into the Nano API
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct LoginResponse {
+    /// The authorization token for this log-in session
     pub auth_token: String
 }
 
+/// Information about Nano's current funraising goals
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct Fundometer {
+    /// The current end-goal
     pub goal: u64,
+    /// The current total raised
     #[serde(deserialize_with = "de_str_num")]
     pub raised: f64,
+    /// The number of people who have donated
     #[serde(rename = "donorCount")]
     pub donor_count: u64
 }
 
+/// An item from the Nano store
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct StoreItem {
+    /// The unique slug for this item
     pub handle: String,
+    /// The URL for the image tied to this item
     #[serde(deserialize_with = "de_heighten_img")]
     pub image: String,
+    /// The user-facing title of this item
     pub title: String
 }
 
+/// A successful response from a call to the API which returns multiple items.
+/// Is generic over the inner data type, which allows for the case of a known return type
+/// to avoid needing an unwrap. Defaults to the generic Object
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct CollectionResponse<D: ObjectInfo = Object> {
+    /// The array of returned objects
     pub data: Vec<D>,
+    /// Any included linked objects
     pub included: Option<Vec<Object>>,
 
+    /// Extra info provided for Post objects
     #[serde(flatten)]
     pub post_info: Option<Box<PostInfo>>
 }
 
+impl<D: ObjectInfo> CollectionResponse<D> {
+    /// Find the instance of an ObjectRef in this response's included list, if
+    /// an instance exists. Otherwise returns None
+    pub fn get_ref(&self, obj_ref: &ObjectRef) -> Option<&Object> {
+        self.included
+            .and_then(
+                |val| val.iter().find(
+                    |obj| obj.id() == obj_ref.id && obj.kind() == obj_ref.kind
+                )
+            )
+    }
+}
+
+/// A successful response from a call to the API which returns a single item.
+/// Is generic over the inner data type, which allows for the case of a known return type
+/// to avoid needing an unwrap. Defaults to the generic Object
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct ItemResponse<D: ObjectInfo = Object> {
+    /// The returned object
     pub data: D,
+    /// Any included linked objects
     pub included: Option<Vec<Object>>,
 
+    /// Extra info provided for Post/Page objects
     #[serde(flatten)]
     pub post_info: Option<Box<PostInfo>>
 }
 
+impl<D: ObjectInfo> ItemResponse<D> {
+    /// Find the instance of an ObjectRef in this response's included list, if
+    /// an instance exists. Otherwise returns None
+    pub fn get_ref(&self, obj_ref: &ObjectRef) -> Option<&Object> {
+        self.included
+            .and_then(
+                |val| val.iter().find(
+                    |obj| obj.id() == obj_ref.id && obj.kind() == obj_ref.kind
+                )
+            )
+    }
+}
+
+/// The extra info provided when getting a Post/Page object
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(deny_unknown_fields)]
 pub struct PostInfo {
+    /// Posts that come after this one
     pub after_posts: Vec<ItemResponse<PostObject>>,
+    /// Info about the author(s) of this post
     pub author_cards: CollectionResponse<PostObject>,
+    /// Posts that come before this one
     pub before_posts: Vec<ItemResponse<PostObject>>
 }
 
+/// A reference to an included [`Object`]. Declares the kind and ID of the Object,
+/// so that it can be uniquely located in the include list
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct ObjectRef {
+    /// The ID of the referenced Object
     #[serde(deserialize_with = "de_str_num")]
     pub id: u64,
+    /// The kind of the referenced Object
     #[serde(rename = "type", deserialize_with = "de_nanokind", serialize_with = "se_nanokind")]
     pub kind: NanoKind
 }
 
+/// A trait for all types that represent an 'Object' in the Nano API. See [`Object`] for the
+/// most general form of this.
 pub trait ObjectInfo {
+    /// Retrive the kind of this Object
     fn kind(&self) -> NanoKind;
+    /// Retrieve the ID of this object
     fn id(&self) -> u64;
+    /// Get the relationships of this Object, if it has any
     fn relationships(&self) -> &Option<RelationInfo>;
+    /// Get the links for this Object, of which there should always be at least a link for `self`
     fn links(&self) -> &LinkInfo;
 }
 
+/// A common type for all Nano API objects. Most useful when you're either not sure of an API type,
+/// or want to accept multiple types in your program. See [`ObjectInfo`] for the kind of things
+/// all these objects have in common
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
 pub enum Object {
@@ -193,6 +260,8 @@ macro_rules! obj_ty {
     ($( $name:ident )+) => {
         paste! {
             $(
+
+            #[doc = "A struct representing an object of kind " $name]
             #[derive(Serialize, Deserialize, Debug)]
             pub struct [<$name Object>] {
                 #[serde(deserialize_with = "de_str_num")]
@@ -200,6 +269,7 @@ macro_rules! obj_ty {
                 relationships: Option<RelationInfo>,
                 links: LinkInfo,
 
+                /// The attributes unique to this object
                 #[serde(rename = "attributes")]
                 pub data: [<$name Data>]
             }
@@ -223,6 +293,7 @@ macro_rules! obj_ty {
             }
 
             impl Object {
+                #[doc = "Get this Object as kind " $name ", or panic"]
                 #[track_caller]
                 pub fn [<unwrap_ $name:snake>](&self) -> &[<$name Object>] {
                     if let Object::$name(inner) = self {
