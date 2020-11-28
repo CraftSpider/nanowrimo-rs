@@ -1,4 +1,4 @@
-use crate::{NanoKind, PrivacySetting, ProjectStatus, EventType, GroupType, EntryMethod, AdminLevel, ActionType, DisplayStatus, WritingType, ContentType, RegistrationPath, BadgeType, JoiningRule, UnitType, AdheresTo, Feeling, How, Where};
+use crate::{NanoKind, PrivacySetting, ProjectStatus, EventType, GroupType, EntryMethod, AdminLevel, ActionType, DisplayStatus, WritingType, ContentType, RegistrationPath, BadgeType, JoiningRule, UnitType, AdheresTo, Feeling, How, Where, InvitationStatus};
 use crate::utils::*;
 
 use std::collections::HashMap;
@@ -21,10 +21,22 @@ pub(crate) enum NanoResponse<T: DeserializeOwned> {
 
 /// The response of the Nano API when a command results in an expected error
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(deny_unknown_fields)]
-pub struct NanoError {
-    /// The error message of the response
-    pub error: String
+#[serde(untagged, deny_unknown_fields)]
+pub enum NanoError {
+    /// A simple error with just a basic message
+    SimpleError { error: String },
+    /// A response with multiple complex errors
+    ErrorList { errors: Vec<ErrorData> }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ErrorData {
+    #[serde(deserialize_with = "de_str_num")]
+    pub code: u64,
+    pub detail: String,
+    #[serde(deserialize_with = "de_str_num")]
+    pub status: u64,
+    pub title: String,
 }
 
 /// The response from logging into the Nano API
@@ -411,7 +423,8 @@ pub struct FavoriteBookData {
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct GenreData {
     pub name: String,
-    pub user_id: u64 // TODO: Always 0?
+    /// The user who created this Genre label
+    pub user_id: u64
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -481,8 +494,8 @@ pub struct NanoMessageData {
     pub official: bool,
     pub send_email: Option<bool>,
     pub sender_avatar_url: Option<String>,
-    pub sender_name: String,
-    pub sender_slug: String,
+    pub sender_name: Option<String>,
+    pub sender_slug: Option<String>,
     pub updated_at: DateTime<Utc>,
     pub user_id: u64,
 }
@@ -737,16 +750,16 @@ pub struct WritingMethodData {
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct GroupUserData {
     pub created_at: DateTime<Utc>,
-    pub entry_at: DateTime<Utc>,
+    pub entry_at: Option<DateTime<Utc>>,
     pub entry_method: EntryMethod,
     pub exit_at: Option<DateTime<Utc>>,
     pub exit_method: Option<String>, // TODO: Enum
     pub group_code_id: Option<u64>,
     pub group_id: u64,
     pub group_type: GroupType,
-    pub invitation_accepted: u64, // TODO: Enum maybe
+    pub invitation_accepted: InvitationStatus,
     pub invited_by_id: Option<u64>,
-    pub is_admin: bool,
+    pub is_admin: Option<bool>,
     pub latest_message: Option<String>,
     pub num_unread_messages: u64,
     pub primary: u64,

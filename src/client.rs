@@ -87,10 +87,10 @@ impl NanoClient {
 
         match status {
             StatusCode::INTERNAL_SERVER_ERROR => return Err(
-                Error::NanoError(status, "Internal Server Error".to_string())
+                Error::SimpleNanoError(status, "Internal Server Error".to_string())
             ),
             StatusCode::NOT_FOUND => return Err(
-                Error::NanoError(status, "Page Not Found".to_string())
+                Error::SimpleNanoError(status, "Page Not Found".to_string())
             ),
             _ => ()
         }
@@ -106,7 +106,12 @@ impl NanoClient {
 
         match nano_resp {
             NanoResponse::Success(val) => Ok(val),
-            NanoResponse::Error(err) => Err(Error::NanoError(status, err.error)),
+            NanoResponse::Error(err) => {
+                match err {
+                    NanoError::SimpleError { error } => Err(Error::SimpleNanoError(status, error)),
+                    NanoError::ErrorList { errors } => Err(Error::NanoErrors(errors))
+                }
+            },
             NanoResponse::Unknown(val) => panic!("Couldn't parse valid JSON as NanoResponse:\n{}", val)
         }
     }
@@ -119,7 +124,7 @@ impl NanoClient {
         let res = self.make_request(path, method.clone(), data).await;
 
         match res {
-            Err(Error::NanoError(code, _)) if code == StatusCode::UNAUTHORIZED && self.is_logged_in() => {
+            Err(Error::SimpleNanoError(code, _)) if code == StatusCode::UNAUTHORIZED && self.is_logged_in() => {
                 self.login().await?;
                 self.make_request(path, method, data).await
             },
@@ -312,6 +317,22 @@ impl NanoClient {
     /// (See [`Self::get_id_include`])
     pub async fn get_id(&self, ty: NanoKind, id: u64) -> Result<ItemResponse, Error> {
         self.get_id_include(ty, id, &[]).await
+    }
+
+    /// Get an item of a specific type and slug, with included items.
+    /// A slug is a unique text identifier for an object, not all types have one.
+    pub async fn get_slug_include(&self, ty: NanoKind, slug: &str, include: &[NanoKind]) -> Result<ItemResponse, Error> {
+        let mut data = Vec::new();
+
+        add_included(&mut data, include);
+
+        self.retry_request(&format!("{}/{}", ty.api_name(), slug), Method::GET, &data).await
+    }
+
+    /// Get an item of a specific type and slug, with no included items.
+    /// A slug is a unique text identifier for an object, not all types have one.
+    pub async fn get_slug(&self, ty: NanoKind, slug: &str) -> Result<ItemResponse, Error> {
+        self.get_slug_include(ty, slug, &[]).await
     }
 
     /// Get all items from a given RelationLink, a tie from one object to object(s) of a specific
