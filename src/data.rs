@@ -1,4 +1,4 @@
-use crate::{NanoKind, PrivacySetting, ProjectStatus, EventType, GroupType, EntryMethod, AdminLevel, ActionType, DisplayStatus, WritingType, ContentType, RegistrationPath, BadgeType, JoiningRule};
+use crate::{NanoKind, PrivacySetting, ProjectStatus, EventType, GroupType, EntryMethod, AdminLevel, ActionType, DisplayStatus, WritingType, ContentType, RegistrationPath, BadgeType, JoiningRule, UnitType, AdheresTo, Feeling, How, Where};
 use crate::utils::*;
 
 use std::collections::HashMap;
@@ -170,6 +170,8 @@ pub enum Object {
     Badge(BadgeObject),
     #[serde(rename = "challenges")]
     Challenge(ChallengeObject),
+    #[serde(rename = "daily-aggregates")]
+    DailyAggregate(DailyAggregateObject),
     #[serde(rename = "favorite-authors")]
     FavoriteAuthor(FavoriteAuthorObject),
     #[serde(rename = "favorite-books")]
@@ -200,6 +202,10 @@ pub enum Object {
     Timer(TimerObject),
     #[serde(rename = "users")]
     User(UserObject),
+    #[serde(rename = "writing-locations")]
+    WritingLocation(WritingLocationObject),
+    #[serde(rename = "writing-methods")]
+    WritingMethod(WritingMethodObject),
 
     #[serde(rename = "group-users")]
     GroupUser(GroupUserObject),
@@ -216,6 +222,7 @@ impl Object {
         match self {
             Object::Badge(data) => data,
             Object::Challenge(data) => data,
+            Object::DailyAggregate(data) => data,
             Object::FavoriteAuthor(data) => data,
             Object::FavoriteBook(data) => data,
             Object::Genre(data) => data,
@@ -231,6 +238,8 @@ impl Object {
             Object::StopWatch(data) => data,
             Object::Timer(data) => data,
             Object::User(data) => data,
+            Object::WritingLocation(data) => data,
+            Object::WritingMethod(data) => data,
 
             Object::GroupUser(data) => data,
             Object::LocationGroup(data) => data,
@@ -313,6 +322,7 @@ macro_rules! obj_ty {
 obj_ty!(
     Badge
     Challenge
+    DailyAggregate
     FavoriteAuthor
     FavoriteBook
     Genre
@@ -328,12 +338,235 @@ obj_ty!(
     StopWatch
     Timer
     User
+    WritingLocation
+    WritingMethod
 
     GroupUser
     LocationGroup
     ProjectChallenge
     UserBadge
 );
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct BadgeData {
+    pub active: bool,
+    pub adheres_to: AdheresTo,
+    pub awarded: String,
+    pub awarded_description: String,
+    pub badge_type: BadgeType,
+    pub description: String,
+    pub generic_description: String,
+    pub list_order: u64,
+    pub suborder: Option<u64>,
+    pub title: String,
+    pub unawarded: String,
+    pub winner: bool
+}
+
+/// A challenge (Nano, Camp Nano, or custom).
+/// The Optional fields will generally be populated for Nanos or Camps,
+/// but null for custom challenges. (Warning: This is only mostly, not absolutely, true)
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct ChallengeData {
+    pub default_goal: u64,
+    pub ends_at: NaiveDate,
+    pub event_type: Option<EventType>,
+    pub flexible_goal: Option<bool>,
+    pub name : String,
+    pub prep_starts_at: Option<NaiveDate>,
+    pub starts_at: NaiveDate,
+    pub unit_type: UnitType,
+    pub user_id: u64,
+    pub win_allowed_at: Option<NaiveDate>,
+    pub writing_type: WritingType,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct DailyAggregateData {
+    pub count: u64,
+    pub day: NaiveDate,
+    pub project_id: u64,
+    pub unit_type: UnitType,
+    pub user_id: Option<u64>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct FavoriteAuthorData {
+    pub name: String,
+    pub user_id: u64
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct FavoriteBookData {
+    pub title: String,
+    pub user_id: u64
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct GenreData {
+    pub name: String,
+    pub user_id: u64 // TODO: Always 0?
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct GroupData {
+    pub approved_by_id: u64,
+    pub avatar: Option<String>,
+    pub cancelled_by_id: u64,
+    pub created_at: DateTime<Utc>,
+    pub description: Option<String>,
+    pub end_dt: Option<DateTime<Utc>>,
+    pub forum_link: Option<String>,
+    pub group_id: Option<u64>,
+    pub group_type: GroupType,
+    pub joining_rule: Option<JoiningRule>,
+    pub latitude: Option<f64>,
+    pub longitude: Option<f64>,
+    pub max_member_count: Option<u64>,
+    pub member_count: Option<u64>,
+    pub name: String,
+    pub plate: Option<String>,
+    pub slug: String,
+    pub start_dt: Option<DateTime<Utc>>,
+    pub time_zone: Option<String>,
+    pub updated_at: DateTime<Utc>,
+    pub url: Option<String>,
+    pub user_id: Option<u64>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct GroupExternalLinkData {
+    pub group_id: u64,
+    pub label: Option<String>,
+    pub url: String
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "kebab-case")]
+pub struct LocationData {
+    pub city: String,
+    pub country: String,
+    pub county: Option<String>,
+    pub formatted_address: Option<String>,
+    pub latitude: f64,
+    pub longitude: f64,
+    pub map_url: Option<String>,
+    pub municipality: Option<String>,
+    pub name: String,
+    pub neighborhood: Option<String>,
+    // TODO: Make this like deserialize_with = "de_str_num" but optional
+    pub postal_code: String,
+    pub state: String,
+    #[serde(rename = "street1")]
+    pub street1: Option<String>,
+    #[serde(rename = "street2")]
+    pub street2: Option<String>,
+    pub utc_offset: Option<i64>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct NanoMessageData {
+    pub content: String,
+    pub created_at: DateTime<Utc>,
+    pub group_id: u64,
+    pub official: bool,
+    pub send_email: Option<bool>,
+    pub sender_avatar_url: Option<String>,
+    pub sender_name: String,
+    pub sender_slug: String,
+    pub updated_at: DateTime<Utc>,
+    pub user_id: u64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct NotificationData {
+    pub action_id: Option<u64>,
+    pub action_type: ActionType,
+    pub content: String,
+    pub created_at: DateTime<Utc>,
+    pub data_count: Option<u64>,
+    pub display_at: DateTime<Utc>,
+    pub display_status: DisplayStatus,
+    pub headline: String,
+    pub image_url: Option<String>,
+    pub last_viewed_at: Option<DateTime<Utc>>,
+    pub redirect_url: Option<String>,
+    pub updated_at: DateTime<Utc>,
+    pub user_id: u64
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct PageData {
+    pub body: String,
+    pub url: String,
+    pub headline: String,
+    pub content_type: ContentType,
+    pub show_after: Option<DateTime<Utc>>,
+    pub promotional_card_image: Option<String>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct PostData {
+    pub api_code: Option<String>, // TODO: ???
+    pub body: String,
+    pub card_image: Option<String>,
+    pub content_type: ContentType,
+    pub expires_at: Option<NaiveDate>,
+    pub external_link: Option<String>,
+    pub headline: String,
+    pub offer_code: Option<String>,
+    pub order: Option<u64>,
+    pub published: bool,
+    pub subhead: Option<String> // TODO: ???
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct ProjectData {
+    pub cover: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub excerpt: Option<String>,
+    pub pinterest_url: Option<String>,
+    pub playlist_url: Option<String>,
+    pub primary: Option<u8>, // TODO: Figure out what this means. It's not an enum
+    pub privacy: PrivacySetting,
+    pub slug: String,
+    pub status: ProjectStatus,
+    pub summary: Option<String>,
+    pub title: String,
+    pub unit_count: Option<u64>,
+    pub unit_type: UnitType,
+    pub user_id: u64,
+    pub writing_type: WritingType,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct ProjectSessionData {
+    pub count: i64,
+    pub created_at: DateTime<Utc>,
+    pub end: DateTime<Utc>,
+    pub feeling: Option<Feeling>,
+    pub how: Option<How>,
+    pub project_challenge_id: u64,
+    pub project_id: u64,
+    pub session_date: NaiveDate,
+    pub start: Option<DateTime<Utc>>,
+    pub unit_type: UnitType,
+    pub r#where: Option<Where>,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
@@ -347,7 +580,7 @@ pub struct StopWatchData {
 pub struct TimerData {
     pub cancelled: bool,
     #[serde(deserialize_with = "de_duration_mins", serialize_with = "se_duration_mins")]
-    pub duration: chrono::Duration, // Measured in minutes.
+    pub duration: chrono::Duration,
     pub start: DateTime<Utc>
 }
 
@@ -491,195 +724,13 @@ pub struct StatsInfo {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
-pub struct ProjectData {
-    pub cover: Option<String>,
-    pub created_at: DateTime<Utc>,
-    pub excerpt: Option<String>,
-    pub pinterest_url: Option<String>,
-    pub playlist_url: Option<String>,
-    pub primary: Option<u8>, // TODO: Enum maybe
-    pub privacy: PrivacySetting,
-    pub slug: String,
-    pub status: ProjectStatus,
-    pub summary: Option<String>,
-    pub title: String,
-    pub unit_count: Option<u64>, // TODO: ???
-    pub unit_type: u64, // TODO: Enum
-    pub user_id: u64,
-    pub writing_type: WritingType,
+pub struct WritingLocationData {
+    pub name: String
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
-pub struct BadgeData {
-    pub active: bool,
-    pub adheres_to: String, // TODO: Enum maybe
-    pub awarded: String,
-    pub awarded_description: String,
-    pub badge_type: BadgeType,
-    pub description: String,
-    pub generic_description: String,
-    pub list_order: u64,
-    pub suborder: Option<u64>,
-    pub title: String,
-    pub unawarded: String,
-    pub winner: bool
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
-pub struct ChallengeData {
-    pub default_goal: u64,
-    pub ends_at: NaiveDate,
-    pub event_type: EventType,
-    pub flexible_goal: bool,
-    pub name : String,
-    pub prep_starts_at: Option<NaiveDate>,
-    pub starts_at: NaiveDate,
-    pub unit_type: u64, // TODO: Enum
-    pub user_id: u64,
-    pub win_allowed_at: NaiveDate,
-    pub writing_type: WritingType,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
-pub struct GenreData {
-    pub name: String,
-    pub user_id: u64 // TODO: Always 0?
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
-pub struct GroupData {
-    pub approved_by_id: u64,
-    pub avatar: Option<String>,
-    pub cancelled_by_id: u64,
-    pub created_at: DateTime<Utc>,
-    pub description: Option<String>,
-    pub end_dt: Option<DateTime<Utc>>,
-    pub forum_link: Option<String>,
-    pub group_id: Option<u64>,
-    pub group_type: GroupType,
-    pub joining_rule: Option<JoiningRule>,
-    pub latitude: Option<f64>,
-    pub longitude: Option<f64>,
-    pub max_member_count: Option<u64>,
-    pub member_count: Option<u64>,
-    pub name: String,
-    pub plate: Option<String>,
-    pub slug: String,
-    pub start_dt: Option<DateTime<Utc>>,
-    pub time_zone: Option<String>,
-    pub updated_at: DateTime<Utc>,
-    pub url: Option<String>,
-    pub user_id: Option<u64>
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "kebab-case")]
-pub struct LocationData {
-    pub city: String,
-    pub country: String,
-    pub county: Option<String>,
-    pub formatted_address: Option<String>,
-    pub latitude: f64,
-    pub longitude: f64,
-    pub map_url: Option<String>,
-    pub municipality: Option<String>,
-    pub name: String,
-    pub neighborhood: Option<String>,
-    // TODO: Make this like deserialize_with = "de_str_num" but optional
-    pub postal_code: String,
-    pub state: String,
-    #[serde(rename = "street1")]
-    pub street1: Option<String>,
-    #[serde(rename = "street2")]
-    pub street2: Option<String>,
-    pub utc_offset: Option<i64>
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
-pub struct GroupExternalLinkData {
-    pub group_id: u64,
-    pub label: Option<String>,
-    pub url: String
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
-pub struct NanoMessageData {
-    pub content: String,
-    pub created_at: DateTime<Utc>,
-    pub group_id: u64,
-    pub official: bool,
-    pub send_email: Option<bool>,
-    pub sender_avatar_url: Option<String>,
-    pub sender_name: String,
-    pub sender_slug: String,
-    pub updated_at: DateTime<Utc>,
-    pub user_id: u64,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
-pub struct NotificationData {
-    pub action_id: Option<u64>,
-    pub action_type: ActionType,
-    pub content: String,
-    pub created_at: DateTime<Utc>,
-    pub data_count: Option<u64>,
-    pub display_at: DateTime<Utc>,
-    pub display_status: DisplayStatus,
-    pub headline: String,
-    pub image_url: Option<String>,
-    pub last_viewed_at: Option<DateTime<Utc>>,
-    pub redirect_url: Option<String>,
-    pub updated_at: DateTime<Utc>,
-    pub user_id: u64
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
-pub struct PageData {
-    pub body: String,
-    pub url: String,
-    pub headline: String,
-    pub content_type: ContentType,
-    pub show_after: Option<DateTime<Utc>>,
-    pub promotional_card_image: Option<String>
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
-pub struct PostData {
-    pub api_code: Option<String>, // TODO: ???
-    pub body: String,
-    pub card_image: Option<String>,
-    pub content_type: ContentType,
-    pub expires_at: Option<NaiveDate>,
-    pub external_link: Option<String>,
-    pub headline: String,
-    pub offer_code: Option<String>,
-    pub order: Option<u64>,
-    pub published: bool,
-    pub subhead: Option<String> // TODO: ???
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
-pub struct FavoriteAuthorData {
-    pub name: String,
-    pub user_id: u64
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
-pub struct FavoriteBookData {
-    pub name: String,
-    pub user_id: u64
+pub struct WritingMethodData {
+    pub name: String
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -718,17 +769,17 @@ pub struct ProjectChallengeData {
     pub current_count: u64,
     pub ends_at: NaiveDate,
     pub event_type: EventType,
-    pub feeling: Option<String>, // TODO: Enum?
+    pub feeling: Option<Feeling>,
     pub goal: u64,
-    pub how: Option<String>, // TODO: ???
-    pub last_recompute: DateTime<Utc>,
+    pub how: Option<How>,
+    pub last_recompute: Option<DateTime<Utc>>,
     pub name: String,
     pub project_id: u64,
-    pub speed: Option<String>, // TODO: ???
-    pub start_count: u64,
+    pub speed: Option<u64>, // TODO: ???
+    pub start_count: Option<u64>,
     pub starts_at: NaiveDate,
-    pub streak: u64,
-    pub unit_type: u64, // TODO: Enum
+    pub streak: Option<u64>,
+    pub unit_type: UnitType,
     pub user_id: u64,
     pub when: Option<u64>, // TODO: ???
     pub writing_location: Option<String>, // TODO: ???
@@ -742,22 +793,6 @@ pub struct UserBadgeData {
     pub created_at: DateTime<Utc>,
     pub project_challenge_id: u64,
     pub user_id: u64,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
-pub struct ProjectSessionData {
-    pub count: u64,
-    pub created_at: DateTime<Utc>,
-    pub end: DateTime<Utc>,
-    pub feeling: Option<String>, // TODO: Enum?
-    pub how: Option<String>, //TODO: ???
-    pub project_challenge_id: u64,
-    pub project_id: u64,
-    pub session_date: NaiveDate,
-    pub start: Option<String>, // TODO: ???
-    pub unit_type: u64, // TODO: Enum
-    pub r#where: Option<String>, // TODO: ???
 }
 
 // This doesn't like deny_unknown_fields, I think due to the custom serialize/deserialize impls

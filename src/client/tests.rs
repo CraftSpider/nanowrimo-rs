@@ -2,7 +2,7 @@ use super::*;
 
 async fn test_client() -> NanoClient {
     NanoClient::new_user(env!("NANO_USERNAME"), env!("NANO_PASSWORD")).await
-        .unwrap()
+        .expect("Couldn't create and log-in a new NanoClient")
 }
 
 #[tokio::test]
@@ -14,46 +14,49 @@ async fn connect() {
 async fn test_current_user() {
     let client = test_client().await;
 
-    let user = client.current_user().await.unwrap();
-
-    assert_eq!(user.data.kind(), NanoKind::User, "current_user didn't return a User type");
+    client.current_user()
+        .await
+        .expect("Couldn't get current user");
 }
 
 #[tokio::test]
 async fn test_fundometer() {
     let client = test_client().await;
 
-    client.fundometer().await.unwrap();
+    client.fundometer().await.expect("Couldn't get Nano Fundometer");
 }
 
 #[tokio::test]
 async fn test_notifications() {
     let client = test_client().await;
 
-    let notifs = client.notifications().await.unwrap();
-
-    for i in notifs.data {
-        assert_eq!(i.kind(), NanoKind::Notification, "notifications didn't return only all notifications");
-    }
+    client.notifications()
+        .await
+        .expect("Couldn't get user notifications");
 }
 
 #[tokio::test]
 async fn test_pages() {
-    let client = NanoClient::new_user(env!("NANO_USERNAME"), env!("NANO_PASSWORD"))
-        .await
-        .unwrap();
+    let client = test_client().await;
 
     for &i in &[
         "what-is-camp-nanowrimo", "nano-prep-101", "pep-talks", "dei", "come-write-in",
         "about-nano", "staff", "board-of-directors", "writers-board", "terms-and-conditions",
         "writers-board", "brought-to-you-by"
     ] {
-        let result = client.pages(i)
+        client.pages(i)
             .await
             .expect("Couldn't get page that was expected to exist");
-
-        assert_eq!(result.data.kind(), NanoKind::Page, "page response was not of kind page");
     }
+}
+
+#[tokio::test]
+async fn test_daily_aggregates() {
+    let client = test_client().await;
+
+    client.daily_aggregates(2617284)
+        .await
+        .expect("Couldn't get daily aggregates");
 }
 
 #[tokio::test]
@@ -63,7 +66,7 @@ async fn test_get_all_filtered() {
 
     let projects = client.get_all_filtered(NanoKind::Project, &[("user_id", user_id)])
         .await
-        .unwrap();
+        .expect("Couldn't get all filtered projects of the current user");
 
     for i in projects.data {
         assert_eq!(i.kind(), NanoKind::Project, "get_all_filtered with Project kind didn't return all projects");
@@ -74,7 +77,9 @@ async fn test_get_all_filtered() {
 async fn test_get_id() {
     let client = test_client().await;
 
-    let badge = client.get_id(NanoKind::Badge, 1).await.unwrap();
+    let badge = client.get_id(NanoKind::Badge, 1)
+        .await
+        .expect("Couldn't get by ID an example Badge");
 
     assert_eq!(badge.data.kind(), NanoKind::Badge, "get_id with Badge kind didn't return a badge")
 }

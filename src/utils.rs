@@ -7,6 +7,9 @@ use std::str::FromStr;
 use serde::{Deserializer, Serializer, Deserialize, Serialize};
 use chrono::Duration;
 
+// TODO: Once serde supports better custom Option with annotations, use those instead
+//       of the opt_* funcs
+
 pub(crate) fn de_str_num<'de, T, D>(des: D) -> Result<T, D::Error>
     where
         D: Deserializer<'de>,
@@ -36,6 +39,8 @@ pub(crate) fn se_duration_mins<S>(duration: &Duration, ser: S) -> Result<S::Ok, 
         .serialize(ser)
 }
 
+// NanoKind related stuff
+
 pub(crate) fn de_nanokind<'de, D>(des: D) -> Result<NanoKind, D::Error>
     where
         D: Deserializer<'de>
@@ -47,6 +52,13 @@ pub(crate) fn de_nanokind<'de, D>(des: D) -> Result<NanoKind, D::Error>
         .map_err(serde::de::Error::custom)
 }
 
+// pub(crate) fn de_opt_nanokind<'de, D>(des: D) -> Result<Option<NanoKind>, D::Error>
+//     where
+//         D: Deserializer<'de>
+// {
+//     Ok(de_nanokind(des).ok())
+// }
+
 pub(crate) fn se_nanokind<S>(kind: &NanoKind, ser: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer
@@ -55,6 +67,25 @@ pub(crate) fn se_nanokind<S>(kind: &NanoKind, ser: S) -> Result<S::Ok, S::Error>
         .api_name()
         .serialize(ser)
 }
+
+// pub(crate) fn se_nanokind_unique<S>(kind: &NanoKind, ser: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: Serializer
+// {
+//     kind
+//         .api_unique_name()
+//         .serialize(ser)
+// }
+//
+// pub(crate) fn se_opt_nanokind_unique<S>(kind: &Option<NanoKind>, ser: S) -> Result<S::Ok, S::Error>
+//     where
+//         S: Serializer
+// {
+//     match kind {
+//         Some(kind) => se_nanokind_unique(kind, ser),
+//         None => <Option<()>>::None.serialize(ser)
+//     }
+// }
 
 pub(crate) fn de_rel_includes<'de, D>(des: D) -> Result<HashMap<NanoKind, Vec<ObjectRef>>, D::Error>
     where

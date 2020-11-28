@@ -25,6 +25,8 @@ pub enum NanoKind {
     StopWatch,
     Timer,
     User,
+    WritingLocation,
+    WritingMethod,
     // Link items, named like ItemAItemB
     ChildPostPost,
     GroupUser,
@@ -60,6 +62,8 @@ impl NanoKind {
             "stopwatches" => NanoKind::StopWatch,
             "timers" => NanoKind::Timer,
             "users" | "user" => NanoKind::User,
+            "writing-locations" => NanoKind::WritingLocation,
+            "writing-methods" => NanoKind::WritingMethod,
 
             "child-post-posts" => NanoKind::ChildPostPost,
             "group-users" => NanoKind::GroupUser,
@@ -71,35 +75,76 @@ impl NanoKind {
         })
     }
 
-    /// Convert a NanoKind into the equivalent name of the type in the Nano API
+    /// Convert a NanoKind into the equivalent name of the type in the Nano API. These are always
+    /// plural, use [`Self::api_unique_name`] for the singular variant.
     pub fn api_name(&self) -> &str {
         match self {
-            NanoKind::User => "users",
-            NanoKind::Project => "projects",
             NanoKind::Badge => "badges",
+            NanoKind::Challenge => "challenges",
+            NanoKind::ChildPost => "child-posts",
+            NanoKind::DailyAggregate => "daily-aggregates",
+            NanoKind::ExternalLink => "external-links",
+            NanoKind::FavoriteAuthor => "favorite-authors",
+            NanoKind::FavoriteBook => "favorite-books",
             NanoKind::Genre => "genres",
             NanoKind::Group => "groups",
-            NanoKind::Challenge => "challenges",
+            NanoKind::GroupExternalLink => "group-external-links",
+            NanoKind::Location => "locations",
             NanoKind::NanoMessage => "nanomessages",
             NanoKind::Notification => "notifications",
-            NanoKind::Location => "locations",
-            NanoKind::ExternalLink => "external-links",
-            NanoKind::GroupExternalLink => "group-external-links",
-            NanoKind::FavoriteBook => "favorite-books",
-            NanoKind::FavoriteAuthor => "favorite-authors",
-            NanoKind::DailyAggregate => "daily-aggregates",
-            NanoKind::UserBadge => "user-badges",
-            NanoKind::ProjectSession => "project-sessions",
-            NanoKind::ProjectChallenge => "project-challenges",
-            NanoKind::GroupUser => "group-users",
-            NanoKind::LocationGroup => "location-groups",
             NanoKind::Page => "pages",
             NanoKind::Post => "posts",
-            NanoKind::Timer => "timers",
+            NanoKind::Project => "projects",
+            NanoKind::ProjectSession => "project-sessions",
             NanoKind::StopWatch => "stopwatches",
-            NanoKind::PostPage => "post-pages",
-            NanoKind::ChildPost => "child-posts",
+            NanoKind::Timer => "timers",
+            NanoKind::User => "users",
+            NanoKind::WritingLocation => "writing-locations",
+            NanoKind::WritingMethod => "writing-methods",
+
             NanoKind::ChildPostPost => "child-post-posts",
+            NanoKind::GroupUser => "group-users",
+            NanoKind::LocationGroup => "location-groups",
+            NanoKind::PostPage => "post-pages",
+            NanoKind::ProjectChallenge => "project-challenges",
+            NanoKind::UserBadge => "user-badges",
+            kind => panic!("Unknown/unimplemented NanoKind: {:?}", kind)
+        }
+    }
+
+    /// Convert a NanoKind into the 'unique' name used for things like relations tied to a unique
+    /// value (Strips the plural).
+    pub fn api_unique_name(&self) -> &str {
+        match self {
+            NanoKind::Badge => "badge",
+            NanoKind::Challenge => "challenge",
+            NanoKind::ChildPost => "child-post",
+            NanoKind::DailyAggregate => "daily-aggregate",
+            NanoKind::ExternalLink => "external-link",
+            NanoKind::FavoriteAuthor => "favorite-author",
+            NanoKind::FavoriteBook => "favorite-book",
+            NanoKind::Genre => "genre",
+            NanoKind::Group => "group",
+            NanoKind::GroupExternalLink => "group-external-link",
+            NanoKind::Location => "location",
+            NanoKind::NanoMessage => "nanomessage",
+            NanoKind::Notification => "notification",
+            NanoKind::Page => "page",
+            NanoKind::Post => "post",
+            NanoKind::Project => "project",
+            NanoKind::ProjectSession => "project-session",
+            NanoKind::StopWatch => "stopwatch",
+            NanoKind::Timer => "timer",
+            NanoKind::User => "user",
+            NanoKind::WritingLocation => "writing-location",
+            NanoKind::WritingMethod => "writing-method",
+
+            NanoKind::ChildPostPost => "child-post-post",
+            NanoKind::GroupUser => "group-user",
+            NanoKind::LocationGroup => "location-group",
+            NanoKind::PostPage => "post-page",
+            NanoKind::ProjectChallenge => "project-challenge",
+            NanoKind::UserBadge => "user-badge",
             kind => panic!("Unknown/unimplemented NanoKind: {:?}", kind)
         }
     }

@@ -36,6 +36,7 @@ impl Into<u8> for PrivacySetting {
 #[derive(Deserialize, Serialize, PartialEq, Eq, Debug, Copy, Clone)]
 #[serde(try_from = "&str", into = "&'static str")]
 pub enum ProjectStatus {
+    Prepping,
     InProgress,
     Drafted,
     Completed,
@@ -47,6 +48,7 @@ impl TryFrom<&str> for ProjectStatus {
 
     fn try_from(val: &str) -> Result<ProjectStatus, Self::Error> {
         match val {
+            "Prepping" => Ok(ProjectStatus::Prepping),
             "In Progress" => Ok(ProjectStatus::InProgress),
             "Drafted" => Ok(ProjectStatus::Drafted),
             "Completed" => Ok(ProjectStatus::Completed),
@@ -59,6 +61,7 @@ impl TryFrom<&str> for ProjectStatus {
 impl Into<&'static str> for ProjectStatus {
     fn into(self) -> &'static str {
         match self {
+            ProjectStatus::Prepping => "Prepping",
             ProjectStatus::InProgress => "In Progress",
             ProjectStatus::Drafted => "Drafted",
             ProjectStatus::Completed => "Completed",
@@ -71,7 +74,8 @@ impl Into<&'static str> for ProjectStatus {
 #[serde(try_from = "u8", into = "u8")]
 pub enum EventType {
     NanoWrimo,
-    CampNano
+    CampNano,
+    Custom,
 }
 
 impl TryFrom<u8> for EventType {
@@ -81,6 +85,7 @@ impl TryFrom<u8> for EventType {
         match val {
             0 => Ok(EventType::NanoWrimo),
             1 => Ok(EventType::CampNano),
+            2 => Ok(EventType::Custom),
             _ => Err("Cannot convert u8 into EventType")
         }
     }
@@ -91,6 +96,7 @@ impl Into<u8> for EventType {
         match self {
             EventType::NanoWrimo => 0,
             EventType::CampNano => 1,
+            EventType::Custom => 2,
         }
     }
 }
@@ -420,7 +426,7 @@ impl TryFrom<u8> for JoiningRule {
         match val {
             0 => Ok(JoiningRule::AdminOnly),
             1 => Ok(JoiningRule::AnyUser),
-            _ => Err("Cannot convert &str into JoiningRule")
+            _ => Err("Cannot convert u8 into JoiningRule")
         }
     }
 }
@@ -430,6 +436,171 @@ impl Into<u8> for JoiningRule {
         match self {
             JoiningRule::AdminOnly => 0,
             JoiningRule::AnyUser => 1,
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, PartialEq, Eq, Debug, Copy, Clone)]
+#[serde(try_from = "u8", into = "u8")]
+pub enum UnitType {
+    Words,
+    Hours
+}
+
+impl TryFrom<u8> for UnitType {
+    type Error = &'static str;
+
+    fn try_from(val: u8) -> Result<UnitType, Self::Error> {
+        match val {
+            0 => Ok(UnitType::Words),
+            1 => Ok(UnitType::Hours),
+            _ => Err("Cannot convert u8 into UnitType")
+        }
+    }
+}
+
+impl Into<u8> for UnitType {
+    fn into(self) -> u8 {
+        match self {
+            UnitType::Words => 0,
+            UnitType::Hours => 1,
+        }
+    }
+}
+
+// This may someday be replaced with NanoKind
+#[derive(Deserialize, Serialize, PartialEq, Eq, Debug, Copy, Clone)]
+#[serde(try_from = "&str", into = "&'static str")]
+pub enum AdheresTo {
+    Unknown,
+    User,
+    ProjectChallenge,
+}
+
+impl TryFrom<&str> for AdheresTo {
+    type Error = &'static str;
+
+    fn try_from(val: &str) -> Result<AdheresTo, Self::Error> {
+        match val {
+            "" => Ok(AdheresTo::Unknown),
+            "user" => Ok(AdheresTo::User),
+            "project_challenge" => Ok(AdheresTo::ProjectChallenge),
+            _ => Err("Cannot convert &str into AdheresTo")
+        }
+    }
+}
+
+impl Into<&'static str> for AdheresTo {
+    fn into(self) -> &'static str {
+        match self {
+            AdheresTo::Unknown => "",
+            AdheresTo::User => "user",
+            AdheresTo::ProjectChallenge => "project_challenge",
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, PartialEq, Eq, Debug, Copy, Clone)]
+#[serde(try_from = "u8", into = "u8")]
+pub enum Feeling {
+    Upset,
+    Stressed,
+    Okay,
+    PrettyGood,
+    Great,
+}
+
+impl TryFrom<u8> for Feeling {
+    type Error = &'static str;
+
+    fn try_from(val: u8) -> Result<Feeling, Self::Error> {
+        match val {
+            1 => Ok(Feeling::Upset),
+            2 => Ok(Feeling::Stressed),
+            3 => Ok(Feeling::Okay),
+            4 => Ok(Feeling::PrettyGood),
+            5 => Ok(Feeling::Great),
+            _ => Err("Cannot convert u8 into Feeling")
+        }
+    }
+}
+
+impl Into<u8> for Feeling {
+    fn into(self) -> u8 {
+        match self {
+            Feeling::Upset => 1,
+            Feeling::Stressed => 2,
+            Feeling::Okay => 3,
+            Feeling::PrettyGood => 4,
+            Feeling::Great => 5,
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, PartialEq, Eq, Debug, Copy, Clone)]
+#[serde(from = "u8", into = "u8")]
+pub enum Where {
+    Home,
+    Office,
+    Library,
+    Cafe,
+    Other(u8)
+}
+
+impl From<u8> for Where {
+    fn from(val: u8) -> Where {
+        match val {
+            0 => Where::Home,
+            1 => Where::Office,
+            2 => Where::Library,
+            3 => Where::Cafe,
+            _ => Where::Other(val)
+        }
+    }
+}
+
+impl Into<u8> for Where {
+    fn into(self) -> u8 {
+        match self {
+            Where::Home => 0,
+            Where::Office => 1,
+            Where::Library => 2,
+            Where::Cafe => 3,
+            Where::Other(val) => val
+        }
+    }
+}
+
+#[derive(Deserialize, Serialize, PartialEq, Eq, Debug, Copy, Clone)]
+#[serde(from = "u8", into = "u8")]
+pub enum How {
+    ByHand,
+    Typewriter,
+    Laptop,
+    Phone,
+    Other(u8)
+}
+
+impl From<u8> for How {
+    fn from(val: u8) -> How {
+        match val {
+            0 => How::ByHand,
+            1 => How::Typewriter,
+            2 => How::Laptop,
+            3 => How::Phone,
+            _ => How::Other(val)
+        }
+    }
+}
+
+impl Into<u8> for How {
+    fn into(self) -> u8 {
+        match self {
+            How::ByHand => 0,
+            How::Typewriter => 1,
+            How::Laptop => 2,
+            How::Phone => 3,
+            How::Other(val) => val
         }
     }
 }

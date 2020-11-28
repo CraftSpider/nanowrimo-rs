@@ -248,6 +248,13 @@ impl NanoClient {
         self.retry_request("challenges/available", Method::GET, &()).await
     }
 
+    /// Get the daily aggregates for a given ProjectChallenge
+    /// ProjectChallenge is the common link between a project and a challenge it was part of,
+    /// thus providing info for counts on given days
+    pub async fn daily_aggregates(&self, id: u64) -> Result<CollectionResponse<DailyAggregateObject>, Error> {
+        self.retry_request(&format!("project-challenges/{}/daily-aggregates", id), Method::GET, &()).await
+    }
+
     // Type queries
 
     /// Get all accessible items of a specific kind, with included linked items and filtering to
