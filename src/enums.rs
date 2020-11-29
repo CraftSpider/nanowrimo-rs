@@ -144,7 +144,8 @@ pub enum EntryMethod {
     Join,
     Creator,
     Create,
-    Invited
+    Invited,
+    Blocked,
 }
 
 impl TryFrom<&str> for EntryMethod {
@@ -156,6 +157,7 @@ impl TryFrom<&str> for EntryMethod {
             "creator" => Ok(EntryMethod::Creator),
             "create" => Ok(EntryMethod::Create),
             "invited" => Ok(EntryMethod::Invited),
+            "blocked" => Ok(EntryMethod::Blocked),
             _ => Err("Cannot convert &str into EntryMethod")
         }
     }
@@ -168,6 +170,7 @@ impl Into<&'static str> for EntryMethod {
             EntryMethod::Creator => "creator",
             EntryMethod::Create => "create",
             EntryMethod::Invited => "invited",
+            EntryMethod::Blocked => "blocked",
         }
     }
 }
@@ -609,27 +612,30 @@ impl Into<u8> for How {
 }
 
 #[derive(Deserialize, Serialize, PartialEq, Eq, Debug, Copy, Clone)]
-#[serde(try_from = "u8", into = "u8")]
+#[serde(try_from = "i8", into = "i8")]
 pub enum InvitationStatus {
+    Blocked,
     Sent,
     Accepted
 }
 
-impl TryFrom<u8> for InvitationStatus {
+impl TryFrom<i8> for InvitationStatus {
     type Error = &'static str;
 
-    fn try_from(val: u8) -> Result<InvitationStatus, Self::Error> {
+    fn try_from(val: i8) -> Result<InvitationStatus, Self::Error> {
         match val {
+            -2 => Ok(InvitationStatus::Blocked),
             0 => Ok(InvitationStatus::Sent),
             1 => Ok(InvitationStatus::Accepted),
-            _ => Err("Cannot convert u8 into InvitationStatus")
+            _ => Err("Cannot convert i8 into InvitationStatus")
         }
     }
 }
 
-impl Into<u8> for InvitationStatus {
-    fn into(self) -> u8 {
+impl Into<i8> for InvitationStatus {
+    fn into(self) -> i8 {
         match self {
+            InvitationStatus::Blocked => -2,
             InvitationStatus::Sent => 0,
             InvitationStatus::Accepted => 1,
         }
