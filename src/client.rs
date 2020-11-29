@@ -95,11 +95,6 @@ impl NanoClient {
             _ => ()
         }
 
-        // if path == "offers" {
-        //     println!("Response: {}", resp.json::<serde_json::Value>().await.unwrap());
-        //     todo!();
-        // }
-
         let nano_resp = resp
             .json()
             .await?;

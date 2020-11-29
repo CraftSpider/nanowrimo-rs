@@ -21,6 +21,15 @@ pub(crate) fn de_str_num<'de, T, D>(des: D) -> Result<T, D::Error>
         .map_err(serde::de::Error::custom)
 }
 
+pub(crate) fn de_opt_str_num<'de, T, D>(des: D) -> Result<Option<T>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: Deserialize<'de> + FromStr,
+        <T as FromStr>::Erro: fmt::Display
+{
+    Ok(de_str_num(des).ok())
+}
+
 pub(crate) fn de_duration_mins<'de, D>(des: D) -> Result<Duration, D::Error>
     where
         D: Deserializer<'de>

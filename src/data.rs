@@ -475,8 +475,8 @@ pub struct LocationData {
     pub municipality: Option<String>,
     pub name: String,
     pub neighborhood: Option<String>,
-    // TODO: Make this like deserialize_with = "de_str_num" but optional
-    pub postal_code: String,
+    #[serde(deserialize_with = "de_opt_str_num")]
+    pub postal_code: Option<u64>,
     pub state: String,
     #[serde(rename = "street1")]
     pub street1: Option<String>,
@@ -621,7 +621,8 @@ pub struct UserData {
 
     pub notifications_viewed_at: DateTime<Utc>,
     pub plate: Option<String>,
-    pub postal_code: Option<String>,
+    #[serde(deserialize_with = "de_opt_str_num")]
+    pub postal_code: Option<u64>,
 
     #[serde(flatten)]
     pub privacy_settings: Option<PrivacySettings>,
